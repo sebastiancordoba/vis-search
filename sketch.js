@@ -76,7 +76,7 @@ function mouseDragged() {
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
       const node = grid[i][j];
-      if (node != null && node.isMouseOver(mouseX, mouseY)) {
+      if (node != start && node != end && node != null && node.isMouseOver(mouseX, mouseY)) {
         grid[i][j] = null;
       }
     }
