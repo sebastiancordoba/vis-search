@@ -8,8 +8,11 @@ class Node {
   }
 
   show() {
-    fill(this.color);
-
+    if(this.visited){
+      fill(0,222,0);
+    } else{
+      fill(this.color);
+    }
     rect(this.x, this.y, this.size, this.size);
   }
 

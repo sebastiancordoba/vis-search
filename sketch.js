@@ -21,6 +21,14 @@ function setup() {
       grid[i][j] = new Node(j * nodeSize, i * nodeSize, nodeSize);
     }
   }
+  textAlign(CENTER);
+  sel = createSelect();
+  sel.position(10,10);
+  sel.option('Best-first-search');
+  sel.option('A*');
+  // Presionar para buscar
+  let search_button = createButton("Search");
+  search_button.mousePressed(searching_end);
 }
 
 function draw() {
@@ -33,6 +41,7 @@ function draw() {
       }
     }
   }
+
   
   
   
@@ -120,4 +129,19 @@ function getNonVisitedAdjacentNodes(node) {
   }
 
   return adjacentNodes;
+}
+
+function searching_end(){
+  switch (sel.value()) {
+    case 'Best-first-search':
+      breadth();
+      break;
+    default:
+      break;
+  }
+  
+}
+
+function breadth(){
+
 }
