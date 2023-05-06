@@ -9,8 +9,8 @@ let firstClick = true;
 let secondClick = false;
 
 function setup() {
-  createCanvas(600, 600);
-  nodeSize = 20;
+  createCanvas(300, 300);
+  nodeSize = 30;
   numRows = Math.ceil(height / nodeSize);
   numCols = Math.ceil(width / nodeSize);
 
@@ -33,6 +33,10 @@ function draw() {
       }
     }
   }
+  
+  
+  
+  
 }
 
 function mousePressed() {
@@ -42,17 +46,17 @@ function mousePressed() {
     const j = Math.floor(mouseX / nodeSize);
     start = grid[i][j];
     if (start != null) {
-      start.visited = true;
       start.color = color(135, 206, 250); // azul claro
+      start.visited = false;
     }
     firstClick = false;
     secondClick = true;
-  } else if (secondClick){
-      const i = Math.floor(mouseY / nodeSize);
+  } else if (secondClick) {
+    const i = Math.floor(mouseY / nodeSize);
     const j = Math.floor(mouseX / nodeSize);
     end = grid[i][j];
     if (end != null) {
-      end.visited = true;
+      end.visited = false;
       end.color = color(135, 206, 250); // azul claro
     }
     secondClick = false;
@@ -61,15 +65,17 @@ function mousePressed() {
     for (let i = 0; i < numRows; i++) {
       for (let j = 0; j < numCols; j++) {
         const node = grid[i][j];
-        if (node != null && node.isMouseOver(mouseX, mouseY)) {
+        if (
+          node != start &&
+          node != end &&
+          node != null &&
+          node.isMouseOver(mouseX, mouseY)
+        ) {
           grid[i][j] = null;
         }
       }
     }
   }
-  let av = getNonVisitedAdjacentNodes(start)
-  av[0].visited = true
-  console.log(av[0])
 }
 
 function mouseDragged() {
@@ -77,7 +83,12 @@ function mouseDragged() {
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
       const node = grid[i][j];
-      if (node != start && node != end && node != null && node.isMouseOver(mouseX, mouseY)) {
+      if (
+        node != start &&
+        node != end &&
+        node != null &&
+        node.isMouseOver(mouseX, mouseY)
+      ) {
         grid[i][j] = null;
       }
     }
