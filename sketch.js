@@ -1,3 +1,4 @@
+p5.disableFriendlyErrors = true; // disables FES
 let grid = [];
 let nodeSize;
 let numRows;
