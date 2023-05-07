@@ -8,10 +8,11 @@ let end = null;
 let firstClick = true;
 let secondClick = false;
 let search_button;
+let final_path = [];
 
 function setup() {
-  createCanvas(300, 300);
-  nodeSize = 30;
+  createCanvas(400, 400);
+  nodeSize = 20;
   numRows = Math.ceil(height / nodeSize);
   numCols = Math.ceil(width / nodeSize);
 
@@ -24,17 +25,18 @@ function setup() {
   }
   textAlign(CENTER);
   sel = createSelect();
-  sel.position(10,10);
-  sel.option('Best-first-search');
-  sel.option('A*');
+  sel.position(10, 10);
+  sel.option("Best-first-search");
+  sel.option("A*");
   // Presionar para buscar
   search_button = createButton("Search");
   search_button.mousePressed(searching_end);
-  search_button.attribute('disabled', '');
+  search_button.attribute("disabled", "");
 }
 
 function draw() {
   background(0);
+  strokeWeight(1);
 
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
@@ -43,11 +45,9 @@ function draw() {
       }
     }
   }
-
-  
-  
-  
-  
+  for (let i = 0; i < final_path.length - 1; i++) {
+    connect_line(final_path[i], final_path[i + 1]);
+  }
 }
 
 function mousePressed() {
@@ -71,7 +71,7 @@ function mousePressed() {
       end.color = color(135, 206, 250); // azul claro
     }
     secondClick = false;
-    search_button.removeAttribute('disabled');
+    search_button.removeAttribute("disabled");
   } else {
     // Comprueba si se hizo clic en un nodo y elimínalo
     for (let i = 0; i < numRows; i++) {
@@ -113,8 +113,9 @@ function getNeighbors(node) {
   const numCols = grid[0].length;
   const row = node.y / nodeSize;
   const col = node.x / nodeSize;
-  
+
   // Verificar los vecinos en las 8 direcciones posibles
+  /*
   for (let i = row - 1; i <= row + 1; i++) {
     for (let j = col - 1; j <= col + 1; j++) {
       // Omitir la posición actual
@@ -129,22 +130,22 @@ function getNeighbors(node) {
       }
     }
   }
+  */
+
   return neighbors;
 }
 
-
-function searching_end(){
+function searching_end() {
   switch (sel.value()) {
-    case 'Best-first-search':
+    case "Best-first-search":
       bfs(start, end);
       break;
-    case 'Best-first-search':
+    case "Best-first-search":
       dijkstra(start, end);
       break;
     default:
       break;
   }
-  
 }
 
 function bfs(startNode, targetNode) {
@@ -157,7 +158,7 @@ function bfs(startNode, targetNode) {
   let parentMap = new Map();
   parentMap.set(startNode, null);
 
-  let delay = 100; // tiempo de espera de 1 segundo
+  let delay = 0; // tiempo de espera de 1 segundo
   let currentNode;
 
   function visitNextNode() {
@@ -172,19 +173,23 @@ function bfs(startNode, targetNode) {
           parent = parentMap.get(parent);
         }
         console.log("Camino encontrado: ", path);
+        final_path = path;
+        start.visited = false;
+        start.color = color(0, 255, 0);
+        end.color = color(255, 0, 0);
         return;
       }
-      currentNode.visited = true;
-
+      currentNode.color = color(185, 250, 255);
+      start.color = color(0, 255, 0);
       let neighbors = getNeighbors(currentNode);
       for (let neighbor of neighbors) {
         if (!visited.has(neighbor)) {
           visited.add(neighbor);
           queue.push(neighbor);
           parentMap.set(neighbor, currentNode);
+          neighbor.color = color(200, 255, 170);
         }
       }
-
       setTimeout(visitNextNode, delay);
     } else {
       console.log("Nodo objetivo no encontrado.");
@@ -194,11 +199,21 @@ function bfs(startNode, targetNode) {
   setTimeout(visitNextNode, delay);
 }
 
-
-function dijkstra(){
+function dijkstra() {
   // ...
 }
 
+function print(x) {
+  console.log(x);
+}
 
-function print(x){console.log(x);}
-
+function connect_line(s, e) {
+  stroke(0);
+  strokeWeight(3);
+  line(
+    s.x + nodeSize / 2,
+    s.y + nodeSize / 2,
+    e.x + nodeSize / 2,
+    e.y + nodeSize / 2
+  );
+}
