@@ -9,9 +9,10 @@ let firstClick = true;
 let secondClick = false;
 let search_button;
 let final_path = [];
+let grid_slider;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(200, 200);
   nodeSize = 20;
   numRows = Math.ceil(height / nodeSize);
   numCols = Math.ceil(width / nodeSize);
@@ -32,11 +33,15 @@ function setup() {
   search_button = createButton("Search");
   search_button.mousePressed(searching_end);
   search_button.attribute("disabled", "");
+  // grid Weight
+  grid_slider = createSlider(0, 2, 1, 0.05);
+  grid_slider.attribute("disabled", "");
+
 }
 
 function draw() {
   background(0);
-  strokeWeight(1);
+  strokeWeight(grid_slider.value());
 
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
@@ -72,6 +77,7 @@ function mousePressed() {
     }
     secondClick = false;
     search_button.removeAttribute("disabled");
+    grid_slider.removeAttribute("disabled");
   } else {
     // Comprueba si se hizo clic en un nodo y elimínalo
     for (let i = 0; i < numRows; i++) {
@@ -115,7 +121,7 @@ function getNeighbors(node) {
   const col = node.x / nodeSize;
 
   // Verificar los vecinos en las 8 direcciones posibles
-  /*
+
   for (let i = row - 1; i <= row + 1; i++) {
     for (let j = col - 1; j <= col + 1; j++) {
       // Omitir la posición actual
@@ -130,12 +136,44 @@ function getNeighbors(node) {
       }
     }
   }
-  */
-
   return neighbors;
 }
 
+function getNeighbors_bfs(node) {
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const x = node.y / nodeSize;
+  const y = node.x / nodeSize;
+  const neighbors = [];
+
+  // Check horizontal and vertical neighbors
+  if (x > 0) neighbors.push(grid[x - 1][y]);
+  if (x < rows - 1) neighbors.push(grid[x + 1][y]);
+  if (y > 0) neighbors.push(grid[x][y - 1]);
+  if (y < cols - 1) neighbors.push(grid[x][y + 1]);
+
+  // Check diagonal neighbors with a penalty
+  if (x > 0 && y > 0) neighbors.push(grid[x - 1][y - 1]);
+  if (x > 0 && y < cols - 1) neighbors.push(grid[x - 1][y + 1]);
+  if (x < rows - 1 && y > 0) neighbors.push(grid[x + 1][y - 1]);
+  if (x < rows - 1 && y < cols - 1) neighbors.push(grid[x + 1][y + 1]);
+
+  // Apply diagonal penalty
+  for (const neighbor of neighbors) {
+    if (neighbor != null) {
+      const dx = Math.abs(neighbor.x - x);
+      const dy = Math.abs(neighbor.y - y);
+      if (dx === 1 && dy === 1) {
+        neighbor.cost *= Math.sqrt(2); // Apply diagonal penalty
+      }
+    }
+  }
+
+  return neighbors.filter((neighbor) => neighbor != null && !neighbor.visited);
+}
+
 function searching_end() {
+  final_path = [];
   switch (sel.value()) {
     case "Best-first-search":
       bfs(start, end);
@@ -181,7 +219,7 @@ function bfs(startNode, targetNode) {
       }
       currentNode.color = color(185, 250, 255);
       start.color = color(0, 255, 0);
-      let neighbors = getNeighbors(currentNode);
+      let neighbors = getNeighbors_bfs(currentNode);
       for (let neighbor of neighbors) {
         if (!visited.has(neighbor)) {
           visited.add(neighbor);
