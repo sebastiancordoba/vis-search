@@ -7,6 +7,7 @@ let start = null;
 let end = null;
 let firstClick = true;
 let secondClick = false;
+let search_button;
 
 function setup() {
   createCanvas(300, 300);
@@ -27,8 +28,9 @@ function setup() {
   sel.option('Best-first-search');
   sel.option('A*');
   // Presionar para buscar
-  let search_button = createButton("Search");
+  search_button = createButton("Search");
   search_button.mousePressed(searching_end);
+  search_button.attribute('disabled', '');
 }
 
 function draw() {
@@ -69,6 +71,7 @@ function mousePressed() {
       end.color = color(135, 206, 250); // azul claro
     }
     secondClick = false;
+    search_button.removeAttribute('disabled');
   } else {
     // Comprueba si se hizo clic en un nodo y elimínalo
     for (let i = 0; i < numRows; i++) {
@@ -104,37 +107,39 @@ function mouseDragged() {
   }
 }
 
-function getNonVisitedAdjacentNodes(node) {
-  const adjacentNodes = [];
-
-  const row = Math.floor(node.y / nodeSize);
-  const col = Math.floor(node.x / nodeSize);
-
-  // Iterate over adjacent nodes
-  for (let i = -1; i <= 1; i++) {
-    for (let j = -1; j <= 1; j++) {
-      const newRow = row + i;
-      const newCol = col + j;
-
-      // Check if new row and column are within bounds
-      if (newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols) {
-        let adjacentNode = grid[newRow][newCol];
-
-        // Check if adjacent node is not null and not visited
-        if (adjacentNode != null && !adjacentNode.visited) {
-          adjacentNodes.push(grid[newRow][newCol]);
+function getNeighbors(node) {
+  const neighbors = [];
+  const numRows = grid.length;
+  const numCols = grid[0].length;
+  const row = node.y / nodeSize;
+  const col = node.x / nodeSize;
+  
+  // Verificar los vecinos en las 8 direcciones posibles
+  for (let i = row - 1; i <= row + 1; i++) {
+    for (let j = col - 1; j <= col + 1; j++) {
+      // Omitir la posición actual
+      if (i === row && j === col) continue;
+      // Verificar si el vecino está dentro de la matriz
+      if (i >= 0 && i < numRows && j >= 0 && j < numCols) {
+        const neighbor = grid[i][j];
+        // Verificar si el vecino es diferente de null o si su atributo visited es false
+        if (neighbor !== null) {
+          neighbors.push(neighbor);
         }
       }
     }
   }
-
-  return adjacentNodes;
+  return neighbors;
 }
+
 
 function searching_end(){
   switch (sel.value()) {
     case 'Best-first-search':
-      breadth();
+      bfs(start, end);
+      break;
+    case 'Best-first-search':
+      dijkstra(start, end);
       break;
     default:
       break;
@@ -142,6 +147,58 @@ function searching_end(){
   
 }
 
-function breadth(){
+function bfs(startNode, targetNode) {
+  let queue = [];
+  queue.push(startNode);
 
+  let visited = new Set();
+  visited.add(startNode);
+
+  let parentMap = new Map();
+  parentMap.set(startNode, null);
+
+  let delay = 100; // tiempo de espera de 1 segundo
+  let currentNode;
+
+  function visitNextNode() {
+    if (queue.length > 0) {
+      currentNode = queue.shift();
+      if (currentNode === targetNode) {
+        // Se encontró el nodo objetivo
+        let path = [currentNode];
+        let parent = parentMap.get(currentNode);
+        while (parent !== null) {
+          path.unshift(parent);
+          parent = parentMap.get(parent);
+        }
+        console.log("Camino encontrado: ", path);
+        return;
+      }
+      currentNode.visited = true;
+
+      let neighbors = getNeighbors(currentNode);
+      for (let neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push(neighbor);
+          parentMap.set(neighbor, currentNode);
+        }
+      }
+
+      setTimeout(visitNextNode, delay);
+    } else {
+      console.log("Nodo objetivo no encontrado.");
+    }
+  }
+
+  setTimeout(visitNextNode, delay);
 }
+
+
+function dijkstra(){
+  // ...
+}
+
+
+function print(x){console.log(x);}
+
