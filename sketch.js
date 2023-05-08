@@ -207,7 +207,7 @@ function searching_end() {
     case "Breath-first-search":
       bfs(start, end);
       break;
-    case "Dijkstra":
+    case "Dijkstra": 
       dijkstra(start, end);
       break;
     case "Genetic":
