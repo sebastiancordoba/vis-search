@@ -9,7 +9,7 @@ class Node {
 
   show() {
     fill(this.color);
-    rect(this.x, this.y, this.size, this.size);
+    rect(this.x, this.y, this.size, this.size, 10);
   }
 
   isMouseOver(x, y) {

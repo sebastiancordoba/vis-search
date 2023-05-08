@@ -8,12 +8,16 @@ let end = null;
 let firstClick = true;
 let secondClick = false;
 let search_button;
+let restart_button;
 let final_path = [];
 let grid_slider;
+let noise_slider;
+let noise_count = 0;
+let noises = [];
 
 function setup() {
-  createCanvas(200, 200);
-  nodeSize = 20;
+  createCanvas(300, 300);
+  nodeSize = 30;
   numRows = Math.ceil(height / nodeSize);
   numCols = Math.ceil(width / nodeSize);
 
@@ -24,19 +28,30 @@ function setup() {
       grid[i][j] = new Node(j * nodeSize, i * nodeSize, nodeSize);
     }
   }
+  // selection
   textAlign(CENTER);
   sel = createSelect();
   sel.position(10, 10);
   sel.option("Best-first-search");
+  sel.option("Dijkstra");
   sel.option("A*");
+  // grid Weight
+  grid_slider = createSlider(0, 2, 1, 0.05);
+  grid_slider.attribute("disabled", "");
+  grid_slider.position(10, 40);
   // Presionar para buscar
   search_button = createButton("Search");
   search_button.mousePressed(searching_end);
   search_button.attribute("disabled", "");
-  // grid Weight
-  grid_slider = createSlider(0, 2, 1, 0.05);
-  grid_slider.attribute("disabled", "");
-
+  search_button.position(10, 70);
+  // Restart
+  restart_button = createButton("Restart");
+  restart_button.mousePressed(restart_fun);
+  restart_button.position(10, 100);
+  // noise quantity
+  noise_slider = createSlider(0, (width * height) / nodeSize / nodeSize, 0, 1);
+  noise_slider.position(10, 130);
+  noise_slider.changed(noise_change);
 }
 
 function draw() {
@@ -50,6 +65,7 @@ function draw() {
       }
     }
   }
+
   for (let i = 0; i < final_path.length - 1; i++) {
     connect_line(final_path[i], final_path[i + 1]);
   }
@@ -174,11 +190,20 @@ function getNeighbors_bfs(node) {
 
 function searching_end() {
   final_path = [];
+
+  for (let i = 0; i < numRows; i++) {
+    for (let j = 0; j < numCols; j++) {
+      if (grid[i][j] != null && grid[i][j] != start && grid[i][j] != end) {
+        grid[i][j].color = color(255, 255, 255);
+      }
+    }
+  }
+
   switch (sel.value()) {
     case "Best-first-search":
       bfs(start, end);
       break;
-    case "Best-first-search":
+    case "Dijkstra":
       dijkstra(start, end);
       break;
     default:
@@ -237,8 +262,65 @@ function bfs(startNode, targetNode) {
   setTimeout(visitNextNode, delay);
 }
 
-function dijkstra() {
-  // ...
+function dijkstra(startNode, endNode) {
+  let distances = new Map();
+  let visited = new Set();
+  let previousNodes = new Map();
+  let delay = 1000; // tiempo de espera de 1 segundo
+
+  // Inicializamos la distancia a todos los nodos desde el nodo de inicio como infinito.
+  for (let row of grid) {
+    for (let node of row) {
+      distances.set(node, Infinity);
+    }
+  }
+
+  // La distancia desde el nodo de inicio a sí mismo es 0.
+  distances.set(startNode, 0);
+
+  function getClosestNode() {
+    let closestNode = null;
+    let closestDistance = Infinity;
+    for (let [node, distance] of distances) {
+      if (!visited.has(node) && distance <= closestDistance) {
+        closestNode = node;
+        closestDistance = distance;
+      }
+    }
+    return closestNode;
+  }
+
+  function visitNextNode() {
+    let closestNode = getClosestNode();
+    closestNode.color = color(255, 0, 0);
+    if (closestNode === endNode) {
+      // Se encontró el nodo objetivo
+      let path = [closestNode];
+      let previous = previousNodes.get(closestNode);
+      while (previous !== startNode) {
+        path.unshift(previous);
+        previous = previousNodes.get(previous);
+      }
+      path.unshift(startNode);
+      console.log("Camino encontrado: ", path);
+      return;
+    }
+
+    let neighbors = getNeighbors(closestNode);
+    for (let neighbor of neighbors) {
+      let distance = closestNode.getDistanceTo(neighbor);
+      let totalDistance = distances.get(closestNode) + distance;
+      if (totalDistance < distances.get(neighbor)) {
+        distances.set(neighbor, totalDistance);
+        previousNodes.set(neighbor, closestNode);
+      }
+    }
+
+    visited.add(closestNode);
+    setTimeout(visitNextNode, delay);
+  }
+
+  setTimeout(visitNextNode, delay);
 }
 
 function print(x) {
@@ -254,4 +336,43 @@ function connect_line(s, e) {
     e.x + nodeSize / 2,
     e.y + nodeSize / 2
   );
+}
+
+function restart_fun() {
+  final_path = [];
+  grid = [];
+  for (let i = 0; i < numRows; i++) {
+    grid[i] = [];
+    for (let j = 0; j < numCols; j++) {
+      grid[i][j] = new Node(j * nodeSize, i * nodeSize, nodeSize);
+    }
+  }
+}
+
+function noise_change() {
+  let value = noise_slider.value();
+  if (value > noise_count) {
+    for (let i = 0; i < value; i++) {
+      const row = Math.floor(Math.random() * grid.length);
+      const col = Math.floor(Math.random() * grid[0].length);
+      if (grid[row][col] != start && grid[row][col] != end) {
+        noises.push(grid[row][col]);
+        grid[row][col] = null;
+      }
+    }
+    print(value)
+    noise_count = value;
+  } else {
+    let n = noises.length - value;
+    print(noise_count)
+    print(value)
+    print(n);
+    print(noises.length)
+    for (let i = 0; i < n; i++) {
+      const x = noises[i].y / nodeSize;
+      const y = noises[i].x / nodeSize;
+      noises.shift();
+      grid[x][y] = new Node(noises[i].x, noises[i].y, nodeSize);
+    }
+  }
 }
