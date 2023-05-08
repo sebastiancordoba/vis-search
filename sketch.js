@@ -33,8 +33,10 @@ function setup() {
   sel = createSelect();
   sel.position(10, 10);
   sel.option("Best-first-search");
+  sel.option("Genetic");
   sel.option("Dijkstra");
   sel.option("A*");
+  sel.selected('Genetic');
   // grid Weight
   grid_slider = createSlider(0, 2, 1, 0.05);
   grid_slider.attribute("disabled", "");
@@ -206,6 +208,9 @@ function searching_end() {
     case "Dijkstra":
       dijkstra(start, end);
       break;
+    case "Genetic":
+      genetic(start, end);
+      break;
     default:
       break;
   }
@@ -360,14 +365,14 @@ function noise_change() {
         grid[row][col] = null;
       }
     }
-    print(value)
+    print(value);
     noise_count = value;
   } else {
     let n = noises.length - value;
-    print(noise_count)
-    print(value)
+    print(noise_count);
+    print(value);
     print(n);
-    print(noises.length)
+    print(noises.length);
     for (let i = 0; i < n; i++) {
       const x = noises[i].y / nodeSize;
       const y = noises[i].x / nodeSize;
