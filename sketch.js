@@ -37,7 +37,7 @@ function setup() {
   sel.option("Dijkstra");
   sel.option("A*");
   sel.option("Depth-first-search");
-  sel.selected('Genetic');
+  sel.selected("Genetic");
   // grid Weight
   grid_slider = createSlider(0, 2, 1, 0.05);
   grid_slider.attribute("disabled", "");
@@ -72,7 +72,6 @@ function draw() {
   for (let i = 0; i < final_path.length - 1; i++) {
     connect_line(final_path[i], final_path[i + 1]);
   }
-
 }
 
 function mousePressed() {
@@ -202,6 +201,7 @@ function searching_end() {
       }
     }
   }
+  print(sel.value());
 
   switch (sel.value()) {
     case "Breath-first-search":
@@ -212,11 +212,12 @@ function searching_end() {
       break;
     case "Genetic":
       genetic(start, end);
+      break;
     case "Depth-first-search":
       depth(start, end);
       break;
     case "A*":
-      astar(start,end);
+      astar(start, end);
       break;
     default:
       break;
@@ -389,13 +390,11 @@ function noise_change() {
   }
 }
 
-
-function depth(startNode, endNode){
+function depth(startNode, endNode) {
   let stack = [startNode];
   let path = [];
   let delay = 0; // tiempo de espera de 50 milisegundos
   startNode.visited = true;
-
 
   function visitNextNode() {
     if (stack.length > 0) {
@@ -411,7 +410,7 @@ function depth(startNode, endNode){
         start.color = color(0, 255, 0);
         end.color = color(255, 0, 0);
         console.log("Camino encontrado: ", path);
-        final_path = path
+        final_path = path;
         return;
       }
 
@@ -443,7 +442,12 @@ function getNeighbors_poda(node) {
 
   // Verificar los vecinos en las 4 direcciones posibles (arriba, abajo, izquierda, derecha)
 
-  const directions = [[-1, 0], [0, -1], [1, 0], [0, 1]]; // (fila, columna) para cada dirección
+  const directions = [
+    [-1, 0],
+    [0, -1],
+    [1, 0],
+    [0, 1],
+  ]; // (fila, columna) para cada dirección
   for (let dir of directions) {
     const newRow = row + dir[0];
     const newCol = col + dir[1];
@@ -458,4 +462,3 @@ function getNeighbors_poda(node) {
   }
   return neighbors;
 }
-
