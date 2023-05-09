@@ -1,70 +1,75 @@
-p5.disableFriendlyErrors = true; // disables FES
-let grid = [];
-let nodeSize;
-let numRows;
-let numCols;
-let start = null;
-let end = null;
-let firstClick = true;
-let secondClick = false;
-let search_button;
-let restart_button;
-let final_path = [];
-let grid_slider;
-let noise_slider;
-let noise_count = 0;
-let noises = [];
-let genetic_pob = [];
-let genetic_dna = [];
-let genetic_fitness = [];
+p5.disableFriendlyErrors = true; // Desactiva los errores amigables
+let grid = []; // Declara una matriz vacía
+let nodeSize; // Tamaño de cada nodo
+let numRows; // Número de filas
+let numCols; // Número de columnas
+let start = null; // Nodo de inicio
+let end = null; // Nodo final
+let firstClick = true; // Variable para controlar el primer clic
+let secondClick = false; // Variable para controlar el segundo clic
+let search_button; // Botón para iniciar la búsqueda
+let restart_button; // Botón para reiniciar
+let final_path = []; // Camino final encontrado por el algoritmo
+let grid_slider; // Slider para ajustar el peso del grid
+let noise_slider; // Slider para ajustar la cantidad de ruido
+let noise_count = 0; // Contador de ruido
+let noises = []; // Array para almacenar los nodos ruidosos
+let genetic_pob = []; // Población del algoritmo genético
+let genetic_dna = []; // Material genético de la población
+let genetic_fitness = []; // Valor de aptitud de cada individuo
 
 function setup() {
-  createCanvas(600, 600);
-  nodeSize = 30;
-  numRows = Math.ceil(height / nodeSize);
-  numCols = Math.ceil(width / nodeSize);
+  createCanvas(600, 600); // Crea un canvas de 600x600 px
+  nodeSize = 30; // Asigna el tamaño de los nodos
+  numRows = Math.ceil(height / nodeSize); // Calcula el número de filas
+  numCols = Math.ceil(width / nodeSize); // Calcula el número de columnas
 
-  // crea la matriz de objetos Node
+  // Crea la matriz de objetos Node
   for (let i = 0; i < numRows; i++) {
     grid[i] = [];
     for (let j = 0; j < numCols; j++) {
       grid[i][j] = new Node(j * nodeSize, i * nodeSize, nodeSize);
     }
   }
-  // selection
+
+  // Selección del algoritmo
   textAlign(CENTER);
   sel = createSelect();
   sel.position(10, 10);
   sel.option("Breath-first-search");
-  sel.option("Genetic");
-  sel.option("Dijkstra");
-  sel.option("A*");
   sel.option("Depth-first-search");
-  sel.selected("Genetic");
-  // grid Weight
+  sel.option("A*");
+  sel.option("Dijkstra");
+  sel.option("Genetic");
+  sel.selected("Breath-first-search");
+
+  // Ajuste del peso del grid
   grid_slider = createSlider(0, 2, 1, 0.05);
   grid_slider.attribute("disabled", "");
   grid_slider.position(10, 40);
-  // Presionar para buscar
+
+  // Botón para iniciar la búsqueda
   search_button = createButton("Search");
   search_button.mousePressed(searching_end);
   search_button.attribute("disabled", "");
   search_button.position(10, 70);
-  // Restart
+
+  // Botón para reiniciar
   restart_button = createButton("Restart");
   restart_button.mousePressed(restart_fun);
   restart_button.position(10, 100);
 
-  // noise quantity
+  // Ajuste de la cantidad de ruido
   noise_slider = createSlider(0, (width * height) / nodeSize / nodeSize, 0, 1);
   noise_slider.position(10, 130);
   noise_slider.changed(noise_change);
 }
 
 function draw() {
-  background(0);
-  strokeWeight(grid_slider.value());
+  background(0); // Establece el color de fondo en negro
+  strokeWeight(grid_slider.value()); // Establece el grosor del grid
 
+  // Dibuja los nodos
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
       if (grid[i][j] != null) {
@@ -87,26 +92,27 @@ function draw() {
 function mousePressed() {
   if (firstClick) {
     // Obtén el nodo sobre el que se hizo clic y asígnalo a la variable start
-    const i = Math.floor(mouseY / nodeSize);
-    const j = Math.floor(mouseX / nodeSize);
-    start = grid[i][j];
+    const i = Math.floor(mouseY / nodeSize); // índice de fila
+    const j = Math.floor(mouseX / nodeSize); // índice de columna
+    start = grid[i][j]; // asigna el nodo seleccionado a la variable start
     if (start != null) {
-      start.color = color(135, 206, 250); // azul claro
-      start.visited = false;
+      start.color = color(135, 206, 250); // cambia el color del nodo a azul claro
+      start.visited = false; // marca el nodo como no visitado
     }
     firstClick = false;
     secondClick = true;
   } else if (secondClick) {
-    const i = Math.floor(mouseY / nodeSize);
-    const j = Math.floor(mouseX / nodeSize);
-    end = grid[i][j];
+    // Obtén el nodo sobre el que se hizo clic y asígnalo a la variable end
+    const i = Math.floor(mouseY / nodeSize); // índice de fila
+    const j = Math.floor(mouseX / nodeSize); // índice de columna
+    end = grid[i][j]; // asigna el nodo seleccionado a la variable end
     if (end != null) {
-      end.visited = false;
-      end.color = color(135, 206, 250); // azul claro
+      end.visited = false; // marca el nodo como no visitado
+      end.color = color(135, 206, 250); // cambia el color del nodo a azul claro
     }
     secondClick = false;
-    search_button.removeAttribute("disabled");
-    grid_slider.removeAttribute("disabled");
+    search_button.removeAttribute("disabled"); // habilita el botón de búsqueda
+    grid_slider.removeAttribute("disabled"); // habilita el control deslizante de la cuadrícula
   } else {
     // Comprueba si se hizo clic en un nodo y elimínalo
     for (let i = 0; i < numRows; i++) {
@@ -118,12 +124,13 @@ function mousePressed() {
           node != null &&
           node.isMouseOver(mouseX, mouseY)
         ) {
-          grid[i][j] = null;
+          grid[i][j] = null; // elimina el nodo de la cuadrícula
         }
       }
     }
   }
 }
+
 
 function mouseDragged() {
   // Comprueba si el mouse está sobre un nodo y elimínalo mientras se arrastra
@@ -236,6 +243,13 @@ function searching_end() {
       break;
   }
 }
+//Este código implementa el algoritmo de búsqueda en amplitud (BFS) 
+//para encontrar el camino más corto entre dos nodos en un grafo. 
+//Utiliza una cola para mantener un seguimiento de los nodos a visitar 
+//y un conjunto para mantener un seguimiento de los nodos visitados. 
+//También utiliza un mapa para mantener un seguimiento de los padres 
+//de cada nodo visitado para reconstruir el camino más corto una vez que se encuentra el nodo objetivo. 
+//Además, utiliza un tiempo de espera de 1 segundo para que el proceso de búsqueda sea más visible en la pantalla.
 
 function bfs(startNode, targetNode) {
   let queue = [];
@@ -316,6 +330,10 @@ function restart_fun() {
   }
 }
 
+
+// La función noise_change cambia la cantidad de ruido en el mapa, agregando o eliminando nodos de forma aleatoria.
+// Obtiene el valor del control deslizante de ruido, luego agrega o elimina nodos aleatorios en el mapa según ese valor.
+// Si el valor es mayor que el valor anterior de ruido, agrega nodos aleatorios. De lo contrario, elimina nodos aleatorios y los reemplaza por nodos eliminados anteriormente.
 function noise_change() {
   let value = noise_slider.value();
   if (value > noise_count) {
@@ -344,6 +362,11 @@ function noise_change() {
   }
 }
 
+// La función depth implementa la búsqueda en profundidad para encontrar un camino desde el nodo de inicio al nodo objetivo.
+// Utiliza una pila para almacenar los nodos a visitar.
+// El algoritmo comienza visitando el nodo de inicio, y luego visita los vecinos de ese nodo de manera recursiva.
+// Si encuentra el nodo objetivo, traza el camino de regreso al nodo de inicio y lo almacena en una lista.
+// Devuelve la lista de nodos en orden inverso para que el primer elemento sea el nodo de inicio y el último el nodo objetivo.
 function depth(startNode, endNode) {
   let stack = [startNode];
   let path = [];
@@ -417,7 +440,8 @@ function getNeighbors_poda(node) {
   }
   return neighbors;
 }
-
+// La función 'heuristic' calcula la distancia 
+// euclidiana entre dos nodos para utilizarla como heurística en el algoritmo A*.
 //CREAMOS A*
 function heuristic(finalPath, endNode) {
   return Math.sqrt(
@@ -425,6 +449,8 @@ function heuristic(finalPath, endNode) {
   );
 }
 
+// La función 'astar' implementa el algoritmo A* para encontrar 
+//el camino óptimo desde el nodo inicial al nodo final en un grid de nodos.
 
 function astar(startNode, endNode) {
   let openList = [startNode];
@@ -494,6 +520,8 @@ function astar(startNode, endNode) {
   console.log("Nodo objetivo no encontrado.");
   return [];
 }
+// La función 'getNeighbors_astar' devuelve una lista de los vecinos
+// del nodo dado para ser utilizada en el algoritmo A*.
 
 function getNeighbors_astar(node) {
   const neighbors = [];
@@ -524,6 +552,17 @@ function getNeighbors_astar(node) {
 
   return neighbors;
 }
+
+
+
+// Esta función implementa el algoritmo de Dijkstra para encontrar el camino más corto
+// entre dos nodos en un grafo.
+// El algoritmo utiliza una lista de nodos sin visitar y una lista de nodos 
+// visitados para encontrar el camino. En cada iteración, se selecciona el nodo sin visitar con la distancia más pequeña 
+// y se exploran todos sus vecinos. Si el vecino no ha sido visitado antes, se calcula el costo del movimiento y se añade a la lista de nodos sin visitar.
+// Si el vecino ya está en la lista de nodos sin visitar, se compara el costo del nuevo camino con el costo anterior y se actualiza si es mejor. Si el nodo actual es el nodo objetivo, se 
+// encuentra el nodo objetivo, la función devuelve una lista vacía.
+
 
 function dijkstra(startNode, endNode) {
   let unvisitedNodes = [startNode];
@@ -591,4 +630,3 @@ function dijkstra(startNode, endNode) {
   console.log("Nodo objetivo no encontrado.");
   return [];
 }
-
