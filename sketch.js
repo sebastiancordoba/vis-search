@@ -14,9 +14,12 @@ let grid_slider;
 let noise_slider;
 let noise_count = 0;
 let noises = [];
+let genetic_pob = [];
+let genetic_dna = [];
+let genetic_fitness = [];
 
 function setup() {
-  createCanvas(900, 900);
+  createCanvas(600, 600);
   nodeSize = 30;
   numRows = Math.ceil(height / nodeSize);
   numCols = Math.ceil(width / nodeSize);
@@ -37,7 +40,7 @@ function setup() {
   sel.option("Dijkstra");
   sel.option("A*");
   sel.option("Depth-first-search");
-  sel.selected('Genetic');
+  sel.selected("Genetic");
   // grid Weight
   grid_slider = createSlider(0, 2, 1, 0.05);
   grid_slider.attribute("disabled", "");
@@ -74,6 +77,11 @@ function draw() {
     connect_line(final_path[i], final_path[i + 1]);
   }
 
+  for (let i = 0; i < genetic_pob.length; i++) {
+    for (let j = 0; j < genetic_pob[i].length; j++) {
+      genetic_pob[i][j].show();
+    }
+  }
 }
 
 function mousePressed() {
@@ -204,6 +212,7 @@ function searching_end() {
       }
     }
   }
+  print(sel.value());
 
   
 
@@ -215,7 +224,8 @@ function searching_end() {
       dijkstra(start, end);
       break;
     case "Genetic":
-      genetic(start, end);
+      genetic(start, end, 10);
+      break;
     case "Depth-first-search":
       depth(start, end);
       break;
@@ -334,7 +344,6 @@ function noise_change() {
   }
 }
 
-
 function depth(startNode, endNode) {
   let stack = [startNode];
   let path = [];
@@ -388,7 +397,12 @@ function getNeighbors_poda(node) {
 
   // Verificar los vecinos en las 4 direcciones posibles (arriba, abajo, izquierda, derecha)
 
-  const directions = [[-1, 0], [0, -1], [1, 0], [0, 1]]; // (fila, columna) para cada dirección
+  const directions = [
+    [-1, 0],
+    [0, -1],
+    [1, 0],
+    [0, 1],
+  ]; // (fila, columna) para cada dirección
   for (let dir of directions) {
     const newRow = row + dir[0];
     const newCol = col + dir[1];
