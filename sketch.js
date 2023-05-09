@@ -8,7 +8,6 @@ let end = null;
 let firstClick = true;
 let secondClick = false;
 let search_button;
-let restart_button;
 let final_path = [];
 let grid_slider;
 let noise_slider;
@@ -41,7 +40,7 @@ function setup() {
   sel.option("A*");
   sel.option("Depth-first-search");
   sel.selected("Genetic");
-  // grid Weight
+  // Estilo de la grid
   grid_slider = createSlider(0, 2, 1, 0.05);
   grid_slider.attribute("disabled", "");
   grid_slider.position(10, 40);
@@ -50,12 +49,7 @@ function setup() {
   search_button.mousePressed(searching_end);
   search_button.attribute("disabled", "");
   search_button.position(10, 70);
-  // Restart
-  restart_button = createButton("Restart");
-  restart_button.mousePressed(restart_fun);
-  restart_button.position(10, 100);
-
-  // noise quantity
+  // Cantidad de noise 
   noise_slider = createSlider(0, (width * height) / nodeSize / nodeSize, 0, 1);
   noise_slider.position(10, 130);
   noise_slider.changed(noise_change);
@@ -73,14 +67,13 @@ function draw() {
     }
   }
 
-  for (let i = 0; i < final_path.length - 1; i++) {
-    connect_line(final_path[i], final_path[i + 1]);
-  }
-
   for (let i = 0; i < genetic_pob.length; i++) {
     for (let j = 0; j < genetic_pob[i].length; j++) {
       genetic_pob[i][j].show();
     }
+  }
+  for (let i = 0; i < final_path.length - 1; i++) {
+    connect_line(final_path[i], final_path[i + 1]);
   }
 }
 
@@ -214,6 +207,9 @@ function searching_end() {
   }
   print(sel.value());
 
+  genetic_pob = [];
+  genetic_fitness = [];
+  genetic_dna = [];
   
 
   switch (sel.value()) {
