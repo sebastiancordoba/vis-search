@@ -16,7 +16,7 @@ let noise_count = 0;
 let noises = [];
 
 function setup() {
-  createCanvas(300, 300);
+  createCanvas(900, 900);
   nodeSize = 30;
   numRows = Math.ceil(height / nodeSize);
   numCols = Math.ceil(width / nodeSize);
@@ -51,6 +51,7 @@ function setup() {
   restart_button = createButton("Restart");
   restart_button.mousePressed(restart_fun);
   restart_button.position(10, 100);
+
   // noise quantity
   noise_slider = createSlider(0, (width * height) / nodeSize / nodeSize, 0, 1);
   noise_slider.position(10, 130);
@@ -199,9 +200,12 @@ function searching_end() {
     for (let j = 0; j < numCols; j++) {
       if (grid[i][j] != null && grid[i][j] != start && grid[i][j] != end) {
         grid[i][j].color = color(255, 255, 255);
+        grid[i][j].visited = false;
       }
     }
   }
+
+  
 
   switch (sel.value()) {
     case "Breath-first-search":
@@ -216,7 +220,7 @@ function searching_end() {
       depth(start, end);
       break;
     case "A*":
-      astar(start,end);
+      astar(start, end);
       break;
     default:
       break;
@@ -254,7 +258,7 @@ function bfs(startNode, targetNode) {
         end.color = color(255, 0, 0);
         return;
       }
-      currentNode.color = color(185, 250, 255);
+      currentNode.color = color(200, 255, 170);
       start.color = color(0, 255, 0);
       let neighbors = getNeighbors_bfs(currentNode);
       for (let neighbor of neighbors) {
@@ -262,74 +266,13 @@ function bfs(startNode, targetNode) {
           visited.add(neighbor);
           queue.push(neighbor);
           parentMap.set(neighbor, currentNode);
-          neighbor.color = color(200, 255, 170);
+          neighbor.color = color(185, 250, 255);
         }
       }
       setTimeout(visitNextNode, delay);
     } else {
       console.log("Nodo objetivo no encontrado.");
     }
-  }
-
-  setTimeout(visitNextNode, delay);
-}
-
-function dijkstra(startNode, endNode) {
-  let distances = new Map();
-  let visited = new Set();
-  let previousNodes = new Map();
-  let delay = 1000; // tiempo de espera de 1 segundo
-
-  // Inicializamos la distancia a todos los nodos desde el nodo de inicio como infinito.
-  for (let row of grid) {
-    for (let node of row) {
-      distances.set(node, Infinity);
-    }
-  }
-
-  // La distancia desde el nodo de inicio a sí mismo es 0.
-  distances.set(startNode, 0);
-
-  function getClosestNode() {
-    let closestNode = null;
-    let closestDistance = Infinity;
-    for (let [node, distance] of distances) {
-      if (!visited.has(node) && distance <= closestDistance) {
-        closestNode = node;
-        closestDistance = distance;
-      }
-    }
-    return closestNode;
-  }
-
-  function visitNextNode() {
-    let closestNode = getClosestNode();
-    closestNode.color = color(255, 0, 0);
-    if (closestNode === endNode) {
-      // Se encontró el nodo objetivo
-      let path = [closestNode];
-      let previous = previousNodes.get(closestNode);
-      while (previous !== startNode) {
-        path.unshift(previous);
-        previous = previousNodes.get(previous);
-      }
-      path.unshift(startNode);
-      console.log("Camino encontrado: ", path);
-      return;
-    }
-
-    let neighbors = getNeighbors(closestNode);
-    for (let neighbor of neighbors) {
-      let distance = closestNode.getDistanceTo(neighbor);
-      let totalDistance = distances.get(closestNode) + distance;
-      if (totalDistance < distances.get(neighbor)) {
-        distances.set(neighbor, totalDistance);
-        previousNodes.set(neighbor, closestNode);
-      }
-    }
-
-    visited.add(closestNode);
-    setTimeout(visitNextNode, delay);
   }
 
   setTimeout(visitNextNode, delay);
@@ -352,6 +295,8 @@ function connect_line(s, e) {
 
 function restart_fun() {
   final_path = [];
+  firstClick = false;
+  secondClick = false;
   grid = [];
   for (let i = 0; i < numRows; i++) {
     grid[i] = [];
@@ -390,17 +335,16 @@ function noise_change() {
 }
 
 
-function depth(startNode, endNode){
+function depth(startNode, endNode) {
   let stack = [startNode];
   let path = [];
   let delay = 0; // tiempo de espera de 50 milisegundos
   startNode.visited = true;
-
+  endNode.visited = false;
 
   function visitNextNode() {
     if (stack.length > 0) {
       let currentNode = stack.pop();
-
       if (currentNode === endNode) {
         while (currentNode.parent) {
           currentNode.color = color(185, 250, 255);
@@ -411,7 +355,7 @@ function depth(startNode, endNode){
         start.color = color(0, 255, 0);
         end.color = color(255, 0, 0);
         console.log("Camino encontrado: ", path);
-        final_path = path
+        final_path = path;
         return;
       }
 
@@ -429,6 +373,7 @@ function depth(startNode, endNode){
       console.log("Nodo objetivo no encontrado.");
     }
   }
+
 
   setTimeout(visitNextNode, delay);
   return path.reverse();
@@ -458,3 +403,178 @@ function getNeighbors_poda(node) {
   }
   return neighbors;
 }
+
+//CREAMOS A*
+function heuristic(finalPath, endNode) {
+  return Math.sqrt(
+    Math.pow(finalPath.x - endNode.x, 2) + Math.pow(finalPath.y - endNode.y, 2)
+  );
+}
+
+
+function astar(startNode, endNode) {
+  let openList = [startNode];
+  let closedList = [];
+  startNode.gScore = 0;
+  startNode.fScore = heuristic(startNode, endNode);
+  endNode.visited = false;
+  while (openList.length > 0) {
+    let currentNode = openList[0];
+
+    // Encontrar el nodo con el menor fScore en la lista abierta
+    for (let i = 1; i < openList.length; i++) {
+      if (openList[i].fScore < currentNode.fScore) {
+        currentNode = openList[i];
+      }
+    }
+
+    // Si el nodo actual es el nodo objetivo, hemos encontrado el camino
+    if (currentNode === endNode) {
+      let path = [];
+      while (currentNode.parent) {
+        currentNode.color = color(185, 250, 255);
+        path.push(currentNode);
+        currentNode = currentNode.parent;
+      }
+      path.push(startNode);
+      startNode.color = color(0, 255, 0);
+      endNode.color = color(255, 0, 0);
+      console.log("Camino encontrado: ", path);
+      new_path = path.reverse();
+      final_path = new_path;
+      return path.reverse();
+    }
+
+    // Mover el nodo actual de la lista abierta a la lista cerrada
+    openList.splice(openList.indexOf(currentNode), 1);
+    closedList.push(currentNode);
+
+    // Encontrar los vecinos del nodo actual
+    let neighbors = getNeighbors_poda(currentNode);
+
+    for (let neighbor of neighbors) {
+      // Si el vecino está en la lista cerrada, saltarlo
+      if (closedList.includes(neighbor)) {
+        continue;
+      }
+
+      // Calcular el costo del movimiento hacia el vecino
+      let tentativeGScore = currentNode.gScore + heuristic(currentNode, neighbor);
+
+      // Si el vecino no está en la lista abierta, añadirlo
+      if (!openList.includes(neighbor)) {
+        openList.push(neighbor);
+      } else if (tentativeGScore >= neighbor.gScore) {
+        // Si el vecino ya está en la lista abierta y el nuevo camino no es mejor, saltarlo
+        continue;
+      }
+
+      // Este camino es el mejor hasta ahora, guardar información sobre el vecino
+      neighbor.parent = currentNode;
+      neighbor.gScore = tentativeGScore;
+      neighbor.fScore = tentativeGScore + heuristic(neighbor, endNode);
+      neighbor.color = color(200, 255, 170);
+    }
+  }
+
+  console.log("Nodo objetivo no encontrado.");
+  return [];
+}
+
+function getNeighbors_astar(node) {
+  const neighbors = [];
+  const row = node.i;
+  const col = node.j;
+  const directions = [
+    [-1, 0], // arriba
+    [0, 1], // derecha
+    [1, 0], // abajo
+    [0, -1], // izquierda
+  ];
+
+  for (let dir of directions) {
+    const newRow = row + dir[0];
+    const newCol = col + dir[1];
+
+    // Si el nuevo nodo está dentro del grid y no es un obstáculo
+    if (
+      newRow >= 0 &&
+      newRow < numRows &&
+      newCol >= 0 &&
+      newCol < numCols &&
+      grid[newRow][newCol] !== null
+    ) {
+      neighbors.push(grid[newRow][newCol]);
+    }
+  }
+
+  return neighbors;
+}
+
+function dijkstra(startNode, endNode) {
+  let unvisitedNodes = [startNode];
+  let visitedNodes = [];
+  startNode.distance = 0;
+
+  while (unvisitedNodes.length > 0) {
+    let currentNode = unvisitedNodes[0];
+
+    // Encontrar el nodo sin visitar con la menor distancia
+    for (let i = 1; i < unvisitedNodes.length; i++) {
+      if (unvisitedNodes[i].distance < currentNode.distance) {
+        currentNode = unvisitedNodes[i];
+      }
+    }
+
+    // Si el nodo actual es el nodo objetivo, hemos encontrado el camino
+    if (currentNode === endNode) {
+      let path = [];
+      let current = currentNode;
+      while (current.parent) {
+        current.color = color(185, 250, 255);
+        path.push(current);
+        current = current.parent;
+      }
+      path.push(startNode);
+      startNode.color = color(0, 255, 0);
+      endNode.color = color(255, 0, 0);
+      console.log("Camino encontrado: ", path);
+      final_path = path.reverse();
+      return path.reverse();
+    }
+
+    // Mover el nodo actual de la lista sin visitar a la lista visitada
+    unvisitedNodes.splice(unvisitedNodes.indexOf(currentNode), 1);
+    visitedNodes.push(currentNode);
+
+    // Encontrar los vecinos del nodo actual
+    let neighbors = getNeighbors(currentNode);
+    for (let neighbor of neighbors) {
+      // Si el vecino ya está en la lista visitada, saltarlo
+      if (visitedNodes.includes(neighbor)) {
+        continue;
+      }
+
+      // Calcular el costo del movimiento hacia el vecino
+      let tentativeDistance = currentNode.distance + 1; // En este caso, el costo de movimiento es 1 para todos los vecinos
+      console.log("TentativeDistance",tentativeDistance);
+
+      // Si el vecino no está en la lista sin visitar, añadirlo
+      if (!unvisitedNodes.includes(neighbor)) {
+        unvisitedNodes.push(neighbor);
+      } else if (tentativeDistance >= neighbor.distance) {
+        // Si el vecino ya está en la lista sin visitar y el nuevo camino no es mejor, saltarlo
+        continue;
+      }
+
+      // Este camino es el mejor hasta ahora, guardar información sobre el vecino
+      neighbor.parent = currentNode;
+      neighbor.distance = tentativeDistance;
+      neighbor.color = color(200, 255, 170);
+    }
+  }
+
+  console.log("Nodo objetivo no encontrado.");
+  return [];
+}
+
