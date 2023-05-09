@@ -14,9 +14,12 @@ let grid_slider;
 let noise_slider;
 let noise_count = 0;
 let noises = [];
+let genetic_pob = [];
+let genetic_dna = [];
+let genetic_fitness = [];
 
 function setup() {
-  createCanvas(300, 300);
+  createCanvas(600, 600);
   nodeSize = 30;
   numRows = Math.ceil(height / nodeSize);
   numCols = Math.ceil(width / nodeSize);
@@ -71,6 +74,12 @@ function draw() {
 
   for (let i = 0; i < final_path.length - 1; i++) {
     connect_line(final_path[i], final_path[i + 1]);
+  }
+
+  for (let i = 0; i < genetic_pob.length; i++) {
+    for (let j = 0; j < genetic_pob[i].length; j++) {
+      genetic_pob[i][j].show();
+    }
   }
 }
 
@@ -207,11 +216,11 @@ function searching_end() {
     case "Breath-first-search":
       bfs(start, end);
       break;
-    case "Dijkstra": 
+    case "Dijkstra":
       dijkstra(start, end);
       break;
     case "Genetic":
-      genetic(start, end);
+      genetic(start, end, 10);
       break;
     case "Depth-first-search":
       depth(start, end);
