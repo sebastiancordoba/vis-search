@@ -1,69 +1,79 @@
 let gen_slider;
+let cromosomas = 30;
 
 function genetic(startNode, endNode, pobSize) {
-  genetic_pob = [];
-  genetic_fitness = [];
-  genetic_dna = [];
   gen_slider = createButton("Gen");
   gen_slider.position(10, 160);
-  gen_slider.mousePressed(generar);
+  gen_slider.mousePressed(generate);
+
+  // Convertir las coordenadas del nodo inicial al sistema de cuadrícula
   const x = startNode.y / nodeSize;
   const y = startNode.x / nodeSize;
 
+  // Inicializar la población del algoritmo genético con secuencias de ADN aleatorias
   for (let i = 0; i < pobSize; i++) {
-    let dna = randomDNA(15);
+    let dna = randomDNA(cromosomas);
     genetic_dna.push(dna);
     let path = show_genetic(dna, x, y);
     genetic_pob.push(path);
     let last = path[path.length - 1];
+
+    // Calcular la aptitud de cada secuencia de ADN en función de la distancia desde el nodo final
     genetic_fitness.push(distance_last(last, endNode));
+
+    // Colorea el último nodo del camino en rojo
     last.color = color(255, 0, 0);
   }
-
-  function generar() {
-    for (let n = 0; n < 5; n++) {
-      for (let i = 0; i < genetic_pob.length; i++) {
-        for (let j = 0; j < genetic_pob[i].length; j++) {
-          genetic_pob[i][j].color = color(255, 255, 255);
-        }
+  // Realiza una generación del algoritmo genético cuando se presiona el botón "Gen"
+  function generate() {
+    // Restablecer los colores de todos los nodos en la población
+    for (let i = 0; i < genetic_pob.length; i++) {
+      for (let j = 0; j < genetic_pob[i].length; j++) {
+        genetic_pob[i][j].color = color(255, 255, 255);
       }
+    }
+    // Seleccione la secuencia de ADN con la aptitud (distancia) más baja como padre
+    bestDNA = indexOfMin(genetic_fitness);
 
-      bestDNA = indexOfMin(genetic_fitness);
-      print(bestDNA);
+    // Generar una nueva población mediante mutación en la secuencia de ADN original
+    for (let i = 0; i < genetic_pob.length; i++) {
+      newDNA = genetic_dna[bestDNA];
+      newDNA = mutacion(newDNA);
+      genetic_dna[i] = newDNA;
+      let path = show_genetic(newDNA, x, y);
+      genetic_pob[i] = path;
+      let last = path[path.length - 1];
 
-      for (let i = 0; i < genetic_pob.length; i++) {
-        print(genetic_dna[i]);
-        newDNA = genetic_dna[bestDNA];
-        //newDNA = crossover(genetic_dna[bestDNA], genetic_dna[i]);
-        newDNA = mutacion(newDNA);
-        print(newDNA);
-        genetic_dna[i] = newDNA;
-        let path = show_genetic(newDNA, x, y);
-        genetic_pob[i] = path;
-        let last = path[path.length - 1];
-        genetic_fitness[i] = distance_last(last, endNode);
-        last.color = color(255, 0, 0);
-      }
+      // Recalcular la aptitud de cada secuencia de ADN en función de la distancia desde el nodo final
+      genetic_fitness[i] = distance_last(last, endNode);
+
+      // Colorea el último nodo del camino en rojo
+      last.color = color(255, 0, 0);
     }
   }
 }
 
+// Dada una secuencia de ADN y las coordenadas iniciales, devuelve la ruta que genera
 function show_genetic(dna, x, y) {
   let newX = x;
   let newY = y;
   let nodes_visited = [];
   for (let i = 0; i < dna.length; i += 2) {
     let move = dna.substring(i, i + 2);
+
+    // Calcular las nuevas coordenadas basadas en el movimiento codificado en la secuencia de ADN
     let moves = switch_dna_move(move, newX, newY);
     if (moves == -1) {
       break;
     }
     newX = moves[0];
     newY = moves[1];
+
+    // Agregar un nuevo nodo a la ruta si existe en la grilla
     copyNode = grid[newX][newY];
     if (copyNode != null) {
       newNode = new Node(copyNode.x, copyNode.y, nodeSize);
-      newNode.color = color(0, 255, 0, 100);
+      newNode.color = color(100, 255, 85, 100);
       nodes_visited.push(newNode);
     } else {
       break;
@@ -72,48 +82,54 @@ function show_genetic(dna, x, y) {
   return nodes_visited;
 }
 
+// Función para mover una celda en el grid basado en una cadena de movimiento
 function switch_dna_move(move_string, i, j) {
   let newI = i;
   let newJ = j;
+
+  // Verifica la cadena de movimiento y actualiza la posición de la celda
   switch (move_string) {
     case "00":
       if (i + 1 < grid.length && grid[i + 1][j] != start) {
-        //grid[i + 1][j].color = color(255, 0, 0, 100);
         newI = i + 1;
       }
       break;
     case "11":
       if (i - 1 >= 0 && grid[i - 1][j] != start) {
-        //grid[i - 1][j].color = color(255, 0, 0, 100);
         newI = i - 1;
       }
       break;
     case "01":
       if (j + 1 < grid[0].length && grid[i][j + 1] != start) {
-        //grid[i][j + 1].color = color(255, 0, 0, 100);
         newJ = j + 1;
       }
       break;
     case "10":
       if (j - 1 >= 0 && grid[i][j - 1] != start) {
-        //grid[i][j - 1].color = color(255, 0, 0, 100);
         newJ = j - 1;
       }
       break;
     default:
       break;
   }
+
+  // Si la celda no cambió de posición, retorna -1
   if (newI == i && newJ == j) {
     return -1;
   }
+
+  // Retorna las nuevas coordenadas de la celda
   return [newI, newJ];
 }
 
+// Función para generar una cadena de ADN aleatoria de longitud n
 function randomDNA(n) {
   let cadena = "";
   let ultimaCombinacion = "";
   for (let i = 0; i < n; i++) {
     let combinacion = "";
+
+    // Genera una nueva combinación hasta que no sea igual a la combinación anterior
     do {
       combinacion = generarCombinacion();
     } while (
@@ -122,48 +138,29 @@ function randomDNA(n) {
       (ultimaCombinacion === "01" && combinacion === "10") ||
       (ultimaCombinacion === "10" && combinacion === "01")
     );
+    // Agrega la nueva combinación a la cadena de ADN
     cadena += combinacion;
     ultimaCombinacion = combinacion;
   }
+  // Retorna la cadena de ADN generada
   return cadena;
 }
 
+// Función para generar una combinación de dos bits aleatoria
 function generarCombinacion() {
   let combinaciones = ["00", "01", "10", "11"];
   let indice = Math.floor(Math.random() * combinaciones.length);
   return combinaciones[indice];
 }
 
-function distance(todoPath, endNode) {
-  let dis = 0;
-  for (let finalPath of todoPath) {
-    dis += Math.sqrt(
-      Math.pow(finalPath.x - endNode.x, 2) +
-        Math.pow(finalPath.y - endNode.y, 2)
-    );
-  }
-  return dis / nodeSize;
-}
-
+// Función para calcular la distancia entre un nodo y el nodo final
 function distance_last(finalPath, endNode) {
   return Math.sqrt(
     Math.pow(finalPath.x - endNode.x, 2) + Math.pow(finalPath.y - endNode.y, 2)
   );
 }
 
-function crossover(dna1, dna2) {
-  // Obtener la longitud de las cadenas de ADN
-  const len = dna1.length;
-
-  // Obtener el índice de la mitad de las cadenas
-  const mid = Math.floor(len / 2);
-
-  // Concatenar la primera mitad de dna1 con la segunda mitad de dna2
-  const newDna = dna1.substring(0, mid) + dna2.substring(mid, len);
-
-  return newDna;
-}
-
+// Regresa el indice del elemento mínimo del arreglo
 function indexOfMin(arr) {
   return arr.indexOf(Math.min(...arr));
 }
