@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizing Search Algorithms - p5.js</title>
+    <meta name="description" content="An interactive visualization of various pathfinding and search algorithms built with p5.js including A*, BFS, DFS, and Dijkstra.">
+    
+    <!-- Libraries -->
+    <script src="lib/p5.js"></script>
+    <script src="lib/p5.sound.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
+    <div id="ui-container">
+      <div id="controls">
+        <!-- p5.js will inject elements here if we use .parent() or we can just let it be -->
+      </div>
+    </div>
+    
     <main>
     </main>
-    <script src="sketch.js"></script>
-    <script src="Node.js"></script>
-    <script src="algos.js"></script>
-    <script src="BFS.js"></script>
-    <script src="DFS.js"></script>
-    <script src="Dijkstra.js"></script>
-    <script src="A_Star.js"></script>
 
+    <!-- Source Files -->
+    <script src="src/Node.js"></script>
+    <script src="src/algos.js"></script>
+    <script src="src/BFS.js"></script>
+    <script src="src/DFS.js"></script>
+    <script src="src/Dijkstra.js"></script>
+    <script src="src/A_Star.js"></script>
+    <script src="src/sketch.js"></script>
   </body>
 </html>

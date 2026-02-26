@@ -29,24 +29,31 @@ function bfs(startNode, targetNode) {
         let parent = parentMap.get(currentNode);
         while (parent !== null) {
           path.unshift(parent);
+          if (parent !== startNode && parent !== targetNode) {
+            parent.color = color(88, 166, 255, 150);
+          }
           parent = parentMap.get(parent);
         }
         console.log("Camino encontrado: ", path);
         final_path = path;
-        start.visited = false;
-        start.color = color(0, 255, 0);
-        end.color = color(255, 0, 0);
+        start.color = color(88, 166, 255);
+        end.color = color(248, 81, 73);
         return;
       }
-      currentNode.color = color(200, 255, 170);
-      start.color = color(0, 255, 0);
+      if (currentNode !== startNode && currentNode !== targetNode) {
+        currentNode.visited = true;
+        currentNode.color = color(56, 139, 253, 40);
+      }
+
       let neighbors = getNeighbors_bfs(currentNode);
       for (let neighbor of neighbors) {
         if (!visited.has(neighbor)) {
           visited.add(neighbor);
           queue.push(neighbor);
           parentMap.set(neighbor, currentNode);
-          neighbor.color = color(185, 250, 255);
+          if (neighbor !== targetNode) {
+            neighbor.color = color(56, 139, 253, 80);
+          }
         }
       }
       setTimeout(visitNextNode, delay);

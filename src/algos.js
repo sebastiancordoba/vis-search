@@ -1,11 +1,7 @@
 let gen_slider;
-let cromosomas = 30;
+let cromosomas = 40;
 
 function genetic(startNode, endNode, pobSize) {
-  gen_slider = createButton("Gen");
-  gen_slider.position(10, 160);
-  gen_slider.mousePressed(generate);
-
   // Convertir las coordenadas del nodo inicial al sistema de cuadrícula
   const x = startNode.y / nodeSize;
   const y = startNode.x / nodeSize;
@@ -21,23 +17,24 @@ function genetic(startNode, endNode, pobSize) {
     // Calcular la aptitud de cada secuencia de ADN en función de la distancia desde el nodo final
     genetic_fitness.push(distance_last(last, endNode));
 
-    // Colorea el último nodo del camino en rojo
-    last.color = color(255, 0, 0);
+    // Colorea el último nodo del camino
+    if (last) last.color = color(248, 81, 73, 150);
   }
-  // Realiza una generación del algoritmo genético cuando se presiona el botón "Gen"
-  function generate() {
+
+  // Realiza una generación del algoritmo genético
+  window.generate = function () {
     // Restablecer los colores de todos los nodos en la población
     for (let i = 0; i < genetic_pob.length; i++) {
       for (let j = 0; j < genetic_pob[i].length; j++) {
-        genetic_pob[i][j].color = color(255, 255, 255);
+        genetic_pob[i][j].color = color(48, 54, 61, 50);
       }
     }
     // Seleccione la secuencia de ADN con la aptitud (distancia) más baja como padre
-    bestDNA = indexOfMin(genetic_fitness);
+    let bestDNAIndex = indexOfMin(genetic_fitness);
 
     // Generar una nueva población mediante mutación en la secuencia de ADN original
     for (let i = 0; i < genetic_pob.length; i++) {
-      newDNA = genetic_dna[bestDNA];
+      let newDNA = genetic_dna[bestDNAIndex];
       newDNA = mutacion(newDNA);
       genetic_dna[i] = newDNA;
       let path = show_genetic(newDNA, x, y);
@@ -47,8 +44,8 @@ function genetic(startNode, endNode, pobSize) {
       // Recalcular la aptitud de cada secuencia de ADN en función de la distancia desde el nodo final
       genetic_fitness[i] = distance_last(last, endNode);
 
-      // Colorea el último nodo del camino en rojo
-      last.color = color(255, 0, 0);
+      // Colorea el último nodo del camino
+      if (last) last.color = color(248, 81, 73, 200);
     }
   }
 }
