@@ -1,35 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizing Search Algorithms - p5.js</title>
-    <meta name="description" content="An interactive visualization of various pathfinding and search algorithms built with p5.js including A*, BFS, DFS, and Dijkstra.">
-    
-    <!-- Libraries -->
-    <script src="lib/p5.js"></script>
-    <script src="lib/p5.sound.min.js"></script>
-    
-    <!-- Styles -->
-    <link rel="stylesheet" type="text/css" href="style.css">
-  </head>
-  <body>
-    <div id="ui-container">
-      <div id="controls">
-        <!-- p5.js will inject elements here if we use .parent() or we can just let it be -->
-      </div>
-    </div>
-    
-    <main>
-    </main>
 
-    <!-- Source Files -->
-    <script src="src/Node.js"></script>
-    <script src="src/algos.js"></script>
-    <script src="src/BFS.js"></script>
-    <script src="src/DFS.js"></script>
-    <script src="src/Dijkstra.js"></script>
-    <script src="src/A_Star.js"></script>
-    <script src="src/sketch.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisSearch - Algorithm Visualization</title>
+  <meta name="description" content="Pathfinding algorithm visualization with A*, BFS, DFS, and Dijkstra.">
+
+  <script>
+    // Debug: Catch and show errors on screen
+    window.addEventListener('error', function (e) {
+      const err = document.createElement('div');
+      err.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(255,0,0,0.9);color:white;padding:10px;z-index:9999;font-family:monospace;';
+      err.textContent = 'ERROR: ' + e.message + ' at ' + e.filename + ':' + e.lineno;
+      document.body.appendChild(err);
+    });
+    console.log("HTML head scripts initialized");
+  </script>
+
+  <!-- Libraries -->
+  <script src="lib/p5.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+  <div id="ui-container">
+    <div id="controls"></div>
+  </div>
+
+  <main id="main"></main>
+
+  <!-- Source Files -->
+  <script src="src/Node.js"></script>
+  <script src="src/algos.js"></script>
+  <script src="src/BFS.js"></script>
+  <script src="src/DFS.js"></script>
+  <script src="src/Dijkstra.js"></script>
+  <script src="src/A_Star.js"></script>
+  <script src="src/sketch.js"></script>
+  <script>
+    console.log("All scripts loaded");
+  </script>
+</body>
+
 </html>

@@ -41,6 +41,10 @@ function initializeGrid() {
 
 function setupUI() {
   const controls = select("#controls");
+  if (!controls) {
+    console.error("UI container #controls not found!");
+    return;
+  }
 
   // Title
   createElement('h1', 'VisSearch').parent(controls);
@@ -54,17 +58,20 @@ function setupUI() {
     algo_select.option("Depth-first-search", "DFS");
     algo_select.option("Genetic", "Genetic");
     algo_select.selected("A*");
+    return algo_select;
   });
 
   // Grid Weight Slider
   createControlGroup(controls, 'Grid Intensity', () => {
     grid_weight_slider = createSlider(0, 2, 0.5, 0.1);
+    return grid_weight_slider;
   });
 
   // Noise Slider
   createControlGroup(controls, 'Obstacle Density', () => {
     noise_slider = createSlider(0, 100, 0, 1);
     noise_slider.input(handleNoiseChange);
+    return noise_slider;
   });
 
   // Search Button
@@ -91,7 +98,7 @@ function setupUI() {
   instr.html(`
     <div class="control-label" style="margin-bottom: 5px">Instructions</div>
     <p id="instruction-text" style="font-size: 0.8rem; line-height: 1.4; color: #8b949e; margin: 0">
-      Click to set <b>Start</b> node.
+      Click on the grid to set the <b>Start</b> position.
     </p>
   `);
 }
@@ -99,7 +106,8 @@ function setupUI() {
 function createControlGroup(parent, labelText, createContent) {
   const group = createElement('div').addClass('control-group').parent(parent);
   createElement('label', labelText).addClass('control-label').parent(group);
-  createContent().parent(group);
+  const element = createContent();
+  element.parent(group);
 }
 
 function updateInstructions() {
@@ -117,7 +125,12 @@ function updateInstructions() {
 
 function draw() {
   background(13, 17, 23);
-  strokeWeight(grid_weight_slider.value());
+
+  if (grid_weight_slider) {
+    strokeWeight(grid_weight_slider.value());
+  } else {
+    strokeWeight(0.5);
+  }
 
   // Show grid
   for (let i = 0; i < numRows; i++) {
@@ -128,8 +141,10 @@ function draw() {
 
   // Show genetic population if any
   for (let i = 0; i < genetic_pob.length; i++) {
-    for (let j = 0; j < genetic_pob[i].length; j++) {
-      genetic_pob[i][j].show();
+    if (genetic_pob[i]) {
+      for (let j = 0; j < genetic_pob[i].length; j++) {
+        genetic_pob[i][j].show();
+      }
     }
   }
 
@@ -167,7 +182,7 @@ function mousePressed() {
     end = target;
     end.color = color(248, 81, 73); // Red
     state = 'READY';
-    search_button.removeAttribute("disabled");
+    if (search_button) search_button.removeAttribute("disabled");
   } else if (state === 'READY' || state === 'FINISHED') {
     if (target !== start && target !== end) {
       grid[i][j] = null;
@@ -177,6 +192,9 @@ function mousePressed() {
 }
 
 function mouseDragged() {
+  // Ignore if mouse is outside canvas
+  if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) return;
+
   if (state === 'READY' || state === 'FINISHED') {
     const j = Math.floor(mouseX / nodeSize);
     const i = Math.floor(mouseY / nodeSize);
@@ -194,7 +212,7 @@ function startSearch() {
 
   state = 'SEARCHING';
   updateInstructions();
-  search_button.attribute("disabled", "");
+  if (search_button) search_button.attribute("disabled", "");
 
   // Clear previous search state but keep walls
   resetPaths();
@@ -206,7 +224,7 @@ function startSearch() {
     case "BFS": bfs(start, end); break;
     case "Dijkstra": dijkstra(start, end); break;
     case "Genetic":
-      gen_button.show();
+      if (gen_button) gen_button.show();
       genetic(start, end, 20);
       break;
     case "DFS": depth(start, end); break;
@@ -222,7 +240,7 @@ function resetPaths() {
   genetic_pob = [];
   genetic_fitness = [];
   genetic_dna = [];
-  gen_button.hide();
+  if (gen_button) gen_button.hide();
 
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
@@ -243,11 +261,11 @@ function resetBoard() {
   final_path = [];
   noises = [];
   noise_count = 0;
-  noise_slider.value(0);
+  if (noise_slider) noise_slider.value(0);
   initializeGrid();
   updateInstructions();
-  search_button.attribute("disabled", "");
-  gen_button.hide();
+  if (search_button) search_button.attribute("disabled", "");
+  if (gen_button) gen_button.hide();
 }
 
 function handleNoiseChange() {
